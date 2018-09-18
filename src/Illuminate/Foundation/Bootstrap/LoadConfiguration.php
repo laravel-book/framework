@@ -21,18 +21,17 @@ class LoadConfiguration
     {
         $items = [];
 
-        // First we will see if we have a cache configuration file. If we do, we'll load
-        // the configuration items from that file so that it is very quick. Otherwise
-        // we will need to spin through every configuration file and load them all.
+        // 第一步 查看配置文件是否存在（汇总的）缓存。若有，加
+        // 载缓存的项目因为这样快很多。否则我们只能一层一层递归
+        // 加载。
         if (file_exists($cached = $app->getCachedConfigPath())) {
             $items = require $cached;
 
             $loadedFromCache = true;
         }
 
-        // Next we will spin through all of the configuration files in the configuration
-        // directory and load each one into the repository. This will make all of the
-        // options available to the developer for use in various parts of this app.
+        // 下一步我们将递归配置文件目录，加载里面的每一项，所有项
+        // 目都在应用中将会是可变的。
         $app->instance('config', $config = new Repository($items));
 
         if (! isset($loadedFromCache)) {
