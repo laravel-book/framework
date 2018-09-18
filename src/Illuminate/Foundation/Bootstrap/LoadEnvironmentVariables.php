@@ -11,6 +11,7 @@ use Illuminate\Contracts\Foundation\Application;
 class LoadEnvironmentVariables
 {
     /**
+     * 加载 .env 的过程
      * Bootstrap the given application.
      *
      * @param  \Illuminate\Contracts\Foundation\Application  $app
@@ -18,13 +19,22 @@ class LoadEnvironmentVariables
      */
     public function bootstrap(Application $app)
     {
+        /**
+         * 判断是否已有配置文件缓存 (位于 bootstrap/cache/config.php)
+         */
         if ($app->configurationIsCached()) {
             return;
         }
 
+        /**
+         * @TODO: 待分析
+         */
         $this->checkForSpecificEnvironmentFile($app);
 
         try {
+            /**
+             * 使用 (vlucas/phpdotenv)[https://github.com/vlucas/phpdotenv] 这个包来解析并加载 .env
+             */
             (new Dotenv($app->environmentPath(), $app->environmentFile()))->load();
         } catch (InvalidPathException $e) {
             //
