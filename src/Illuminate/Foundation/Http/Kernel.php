@@ -155,9 +155,9 @@ class Kernel implements KernelContract
         /**
          * 启动
          *
-         * 这里为框架启动的大头。 请查看 https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Http/Kernel.php#L194 的分析
+         * 这里为框架启动的大头。 请查看 https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Http/Kernel.php#L196 的分析
          *
-         * @see https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Http/Kernel.php#L194
+         * @see https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Http/Kernel.php#L196
          */
         $this->bootstrap();
 
@@ -195,6 +195,19 @@ class Kernel implements KernelContract
      */
     public function bootstrap()
     {
+        /**
+         * 框架加载过程
+         *
+         * 运行步骤为:
+         * - $this->app->hasBeenBootstrapped()
+         *   - 判断是否加载过了。所以你用 `php artisain serve` 时候，不会重复运行 `bootstrapWith` 的过程(除非设置了 `defer`)
+         *
+         * - $this->bootstrappers()
+         *   - 获取需要 `bootstrap` 的项
+         *
+         * - $this->app->bootstrapWith($this->bootstrappers())
+         *   - `bootstrapWith` 过程，请见 https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Application.php#L199 的分析
+         */
         if (! $this->app->hasBeenBootstrapped()) {
             $this->app->bootstrapWith($this->bootstrappers());
         }
