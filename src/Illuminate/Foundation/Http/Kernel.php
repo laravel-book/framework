@@ -113,6 +113,9 @@ class Kernel implements KernelContract
         try {
             $request->enableHttpMethodParameterOverride();
 
+            /**
+             * 由请求处理成响应的全过程
+             */
             $response = $this->sendRequestThroughRouter($request);
         } catch (Exception $e) {
             $this->reportException($e);
@@ -139,12 +142,46 @@ class Kernel implements KernelContract
      */
     protected function sendRequestThroughRouter($request)
     {
+        /**
+         * 将 `\Illuminate\Http\Request` 注入到全局容器
+         */
         $this->app->instance('request', $request);
 
+        /**
+         * 清理门面的 `request` 对应的对象
+         */
         Facade::clearResolvedInstance('request');
 
+        /**
+         * 启动
+         *
+         * 这里为框架启动的大头。 请查看 https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Http/Kernel.php#L194 的分析
+         *
+         * @see https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Http/Kernel.php#L194
+         */
         $this->bootstrap();
 
+        /**
+         * 这里代码里有点多。运行实际步骤为
+         *
+         * - (new Pipeline($this->app))
+         *   - 初始化管道
+         *
+         * - ->send($request)
+         *   - 扔入请求到管道
+         *
+         * - $this->app->shouldSkipMiddleware()
+         *   - 判断是否应该跳过中间件
+         *
+         * - ->through($this->app->shouldSkipMiddleware() ? [] : $this->middleware)
+         *   - 处理中间件
+         *
+         * - $this->dispatchToRouter()
+         *   - 解析路由
+         *
+         * - ->then($this->dispatchToRouter());
+         *   - ...
+         */
         return (new Pipeline($this->app))
                     ->send($request)
                     ->through($this->app->shouldSkipMiddleware() ? [] : $this->middleware)
