@@ -193,18 +193,45 @@ class Application extends Container implements ApplicationContract, HttpKernelIn
     /**
      * Run the given array of bootstrap classes.
      *
+     * 一般情况下，传入的 $bootstrappers =
+     * - Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables
+     * - Illuminate\Foundation\Bootstrap\LoadConfiguration
+     * - Illuminate\Foundation\Bootstrap\HandleExceptions
+     * - Illuminate\Foundation\Bootstrap\RegisterFacades
+     * - Illuminate\Foundation\Bootstrap\RegisterProviders
+     * - Illuminate\Foundation\Bootstrap\BootProviders
+     *
      * @param  array  $bootstrappers
      * @return void
      */
     public function bootstrapWith(array $bootstrappers)
     {
+        /**
+         * 让 Application::hasBeenBootstrapped() 返回 true
+         */
         $this->hasBeenBootstrapped = true;
 
         foreach ($bootstrappers as $bootstrapper) {
+            /**
+             * 触发 Bootstrap 类的 `bootstrapping` 事件
+             */
             $this['events']->fire('bootstrapping: '.$bootstrapper, [$this]);
 
+            /**
+             * 实例化 Bootstrap 类，并调用 Bootstrap 类的 bootstrap 方法。具体分析请分别见：
+             * 
+             * @see https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Bootstrap/LoadEnvironmentVariables.php#L19
+             * @see https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php#L20
+             * @see https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php#L28
+             * @see https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Bootstrap/RegisterFacades.php#L18
+             * @see https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Bootstrap/RegisterProviders.php#L15
+             * @see https://github.com/laravel-book/framework/blob/5.7/src/Illuminate/Foundation/Bootstrap/BootProviders.php#L15
+             */
             $this->make($bootstrapper)->bootstrap($this);
 
+            /**
+             * 触发 Bootstrap 类的 `bootstrapped` 事件
+             */
             $this['events']->fire('bootstrapped: '.$bootstrapper, [$this]);
         }
     }
